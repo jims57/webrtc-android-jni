@@ -1,0 +1,25 @@
+【AEC key points】
+
+The TTS audio buffer used as reference must be synchronized with the actual audio played by the speaker. There might be a delay between when the buffer is sent to the audio device and when it is played. 
+Reference audio is fed to AEC AMP before speaker is playing the same audio
+On both platforms, we have access to the original TTS audio buffers (before they are played) to use as the reference signal. This is the most reliable and recommended method.
+We handle the audio latency appropriately. We need to measure the round-trip delay (from when we submit the TTS buffer to the audio device until it is captured by the microphone) and set the `stream_delay_ms` in the APM accordingly.
+TTS audio must be fed to APM ~5-20ms before playback for synchronization.
+ On Android, we can use `AudioTrack` for playback and `AudioRecord` for recording.On iOS, we use `AVAudioEngine` or similar.
+The WebRTC APM requires that the reference signal (TTS) is fed in advance of the microphone capturing the echo. The delay between the reference signal and the echo in the microphone must be within the APM's ability to handle (usually up to 500 ms). 
+WebRTC APM requires that the sample rates for both the reverse and forward streams are the same. Also, the number of channels for the reverse stream can be different (but typically we use mono). In the above, we assume the same sample rate and same number of channels for simplicity.
+The reference signal (TTS) must be fed to the APM before the corresponding echo is captured by the microphone. This requires that the TTS audio is fed to the APM a little before (or at least at the same time) as it is played. The APM can handle some delay (up to 500 ms) but it's better to be as close as possible.
+The APM may need to know the total delay from when the reference signal is fed to when it is played and then captured by the microphone. This is device-specific and can be hard to estimate. However, WebRTC APM has an automatic delay estimator that usually works well.​
+Android​​: Enable mobile_mode=true for optimized AEC performance on resource-constrained devices
+Initialize AEC3 (48kHz sample rate mandatory)
+Disable VPIO: Apple’s hardware AEC conflicts with AEC3. Use  AVAudioEngine  to capture mic/TTS instead.
+iOS Latency: Fixed ~20ms delay compensation
+Feeding far-end TTS PCM via  AnalyzeRender() .
+Processing near-end mic input with  ProcessCapture() .
+Mandating 48kHz sample rate and 10ms buffering.
+Tuning delay compensation (Android: 80-150ms, iOS: 20ms).
+Adding noise to TTS reference to handle nonlinearity.
+延迟：若回声延迟 <50ms，人耳感知为增强音效；>80ms 则被视为明显回声 。
+ACE3:Block Processing: Operates on 10ms audio blocks (480 samples at 48kHz), leveraging frequency-domain analysis for better nonlinear echo handling .
+On both platforms, we have access to the original TTS audio buffers (before they are played) to use as the reference signal. This is the most reliable and recommended method.
+We need to measure the round-trip delay (from when we submit the TTS buffer to the audio device until it is captured by the microphone) and set the `stream_delay_ms` in the APM accordingly.TTS audio must be fed to APM ~5-20ms before playback for synchronization.The WebRTC APM requires that the reference signal (TTS) is fed in advance of the microphone capturing the echo. The delay between the reference signal and the echo in the microphone must be within the APM's ability to handle (usually up to 500 ms). WebRTC AEC3 can be used independently for TTS echo cancellation by:Feeding far-end TTS PCM via AnalyzeRender() .Processing near-end mic input with ProcessCapture() .Mandating 48kHz sample rate and 10ms buffering.Tuning delay compensation (Android: 80-150ms, iOS: 20ms).Adding noise to TTS reference to handle nonlinearity.AEC3 requires 48kHz sample rate - this is critical as lower rates cause silent output. Inject synthetic delay via  aec->set_stream_delay_ms(100)  and sweep ±30ms to find optimal value Critical: Always process TTS first → mic second Buffer Size: Exactly 480 samples (10ms at 48kHz) .

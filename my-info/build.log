@@ -1,0 +1,213 @@
+🚀 Building WebRTC AEC TTS Android AAR
+📁 Project: /Users/mac/Documents/GitHub/webrtc-android-jni
+🔧 NDK: /Users/mac/Library/Android/sdk/ndk/25.2.9519653
+📊 AEC Config: 16000Hz, 160 samples, 100ms delay
+🧹 Cleaning previous builds...
+📝 Copying source files...
+📝 No include directory found, creating basic include structure...
+📝 Generating Android.mk...
+🔨 Building native libraries...
+[x86] Compile        : wq_aec_tts <= nsx_core_c.c
+[x86] Compile        : wq_aec_tts <= aec_rdft_sse2.c
+[x86] Compile        : wq_aec_tts <= aec_core_sse2.c
+[x86] Compile        : wq_aec_tts <= aecm_core_c.c
+[x86_64] Compile        : wq_aec_tts <= aec_rdft_sse2.c
+[arm64-v8a] Compile++      : wq_aec_tts <= wq_aec_jni.cpp
+[armeabi-v7a] Compile++ thumb: wq_aec_tts <= wq_aec_jni.cpp
+[armeabi-v7a] Compile++ thumb: wq_aec_tts <= wq_aec_processor.cpp
+[x86_64] Compile        : wq_aec_tts <= nsx_core_c.c
+[x86_64] Compile        : wq_aec_tts <= aecm_core_c.c
+[x86_64] Compile        : wq_aec_tts <= aec_core_sse2.c
+[arm64-v8a] Compile++      : wq_aec_tts <= wq_aec_convertor.cpp
+[armeabi-v7a] Compile++ thumb: wq_aec_tts <= wq_aec_convertor.cpp
+[x86] Compile++      : wq_aec_tts <= wq_aec_convertor.cpp
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aec_resampler.c
+[x86] Compile++      : wq_aec_tts <= wq_aec_jni.cpp
+[x86] Compile++      : wq_aec_tts <= wq_aec_processor.cpp
+[arm64-v8a] Compile++      : wq_aec_tts <= wq_aec_processor.cpp
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aec_rdft.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= noise_suppression.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= noise_suppression_x.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= echo_control_mobile.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= echo_cancellation.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= delay_estimator_wrapper.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aecm_core.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= complex_bit_reverse.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= ring_buffer.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= delay_estimator.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aec_core.c
+[x86_64] Compile++      : wq_aec_tts <= wq_aec_jni.cpp
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= copy_set_operations.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= complex_fft.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= fft4g.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= ns_core.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= cross_correlation.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= downsample_fast.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= energy.c
+[x86_64] Compile++      : wq_aec_tts <= wq_aec_processor.cpp
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= division_operations.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= get_scaling_square.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= randomization_functions.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= nsx_core.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= min_max_operations.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= spl_init.c
+[x86_64] Compile++      : wq_aec_tts <= wq_aec_convertor.cpp
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= spl_sqrt_floor.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= spl_sqrt.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= real_fft.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= vector_scaling_operations.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= nsx_core_c.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aecm_core_neon.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= cross_correlation_neon.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aec_rdft_neon.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aecm_core_c.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= min_max_operations_neon.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= downsample_fast_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= aec_resampler.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= nsx_core_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= noise_suppression.c
+[arm64-v8a] Compile        : wq_aec_tts <= noise_suppression_x.c
+[armeabi-v7a] Compile thumb  : wq_aec_tts <= aec_core_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= echo_control_mobile.c
+[arm64-v8a] Compile        : wq_aec_tts <= aec_rdft.c
+[arm64-v8a] Compile        : wq_aec_tts <= echo_cancellation.c
+[arm64-v8a] Compile        : wq_aec_tts <= delay_estimator_wrapper.c
+[arm64-v8a] Compile        : wq_aec_tts <= complex_bit_reverse.c
+[arm64-v8a] Compile        : wq_aec_tts <= ring_buffer.c
+[arm64-v8a] Compile        : wq_aec_tts <= delay_estimator.c
+[arm64-v8a] Compile        : wq_aec_tts <= complex_fft.c
+[arm64-v8a] Compile        : wq_aec_tts <= copy_set_operations.c
+[arm64-v8a] Compile        : wq_aec_tts <= cross_correlation.c
+[arm64-v8a] Compile        : wq_aec_tts <= downsample_fast.c
+[arm64-v8a] Compile        : wq_aec_tts <= division_operations.c
+[arm64-v8a] Compile        : wq_aec_tts <= get_scaling_square.c
+[arm64-v8a] Compile        : wq_aec_tts <= energy.c
+[arm64-v8a] Compile        : wq_aec_tts <= randomization_functions.c
+[arm64-v8a] Compile        : wq_aec_tts <= fft4g.c
+[arm64-v8a] Compile        : wq_aec_tts <= aecm_core.c
+[arm64-v8a] Compile        : wq_aec_tts <= spl_init.c
+[arm64-v8a] Compile        : wq_aec_tts <= spl_sqrt.c
+[arm64-v8a] Compile        : wq_aec_tts <= real_fft.c
+[arm64-v8a] Compile        : wq_aec_tts <= spl_sqrt_floor.c
+[arm64-v8a] Compile        : wq_aec_tts <= min_max_operations.c
+[arm64-v8a] Compile        : wq_aec_tts <= vector_scaling_operations.c
+[arm64-v8a] Compile        : wq_aec_tts <= nsx_core_c.c
+[arm64-v8a] Compile        : wq_aec_tts <= ns_core.c
+[arm64-v8a] Compile        : wq_aec_tts <= cross_correlation_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= nsx_core.c
+[arm64-v8a] Compile        : wq_aec_tts <= aecm_core_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= aec_rdft_neon.c
+[arm64-v8a] Compile        : wq_aec_tts <= downsample_fast_neon.c
+[x86] Compile        : wq_aec_tts <= aec_resampler.c
+[arm64-v8a] Compile        : wq_aec_tts <= aecm_core_c.c
+[arm64-v8a] Compile        : wq_aec_tts <= min_max_operations_neon.c
+[x86] Compile        : wq_aec_tts <= noise_suppression.c
+[x86] Compile        : wq_aec_tts <= aec_rdft.c
+[arm64-v8a] Compile        : wq_aec_tts <= nsx_core_neon.c
+[x86] Compile        : wq_aec_tts <= noise_suppression_x.c
+[x86] Compile        : wq_aec_tts <= echo_cancellation.c
+[x86] Compile        : wq_aec_tts <= echo_control_mobile.c
+[arm64-v8a] Compile        : wq_aec_tts <= aec_core_neon.c
+[x86] Compile        : wq_aec_tts <= complex_bit_reverse.c
+[x86] Compile        : wq_aec_tts <= aecm_core.c
+[x86] Compile        : wq_aec_tts <= copy_set_operations.c
+[x86] Compile        : wq_aec_tts <= complex_fft.c
+[x86] Compile        : wq_aec_tts <= ring_buffer.c
+[x86] Compile        : wq_aec_tts <= delay_estimator.c
+[x86] Compile        : wq_aec_tts <= delay_estimator_wrapper.c
+[arm64-v8a] Compile        : wq_aec_tts <= aec_core.c
+[x86] Compile        : wq_aec_tts <= cross_correlation.c
+[x86] Compile        : wq_aec_tts <= energy.c
+[x86] Compile        : wq_aec_tts <= division_operations.c
+[x86] Compile        : wq_aec_tts <= downsample_fast.c
+[x86] Compile        : wq_aec_tts <= fft4g.c
+[x86] Compile        : wq_aec_tts <= get_scaling_square.c
+[x86] Compile        : wq_aec_tts <= randomization_functions.c
+[x86] Compile        : wq_aec_tts <= spl_sqrt.c
+[x86] Compile        : wq_aec_tts <= spl_init.c
+[x86] Compile        : wq_aec_tts <= min_max_operations.c
+[x86] Compile++      : wq_aec_tts <= cpu_features.cc
+[x86] Compile        : wq_aec_tts <= real_fft.c
+[x86] Compile        : wq_aec_tts <= spl_sqrt_floor.c
+[x86] Compile        : wq_aec_tts <= vector_scaling_operations.c
+[x86_64] Compile        : wq_aec_tts <= aec_resampler.c
+[x86_64] Compile        : wq_aec_tts <= echo_control_mobile.c
+[x86] Compile        : wq_aec_tts <= ns_core.c
+[x86_64] Compile        : wq_aec_tts <= noise_suppression_x.c
+[x86] Compile        : wq_aec_tts <= aec_core.c
+[x86_64] Compile        : wq_aec_tts <= noise_suppression.c
+[x86_64] Compile        : wq_aec_tts <= aec_rdft.c
+[x86] Compile        : wq_aec_tts <= nsx_core.c
+[x86_64] Compile        : wq_aec_tts <= echo_cancellation.c
+[x86_64] Compile        : wq_aec_tts <= aecm_core.c
+[x86_64] Compile        : wq_aec_tts <= complex_bit_reverse.c
+[x86_64] Compile        : wq_aec_tts <= ring_buffer.c
+[x86_64] Compile        : wq_aec_tts <= complex_fft.c
+[x86_64] Compile        : wq_aec_tts <= copy_set_operations.c
+[x86_64] Compile        : wq_aec_tts <= cross_correlation.c
+[x86_64] Compile        : wq_aec_tts <= downsample_fast.c
+[x86_64] Compile        : wq_aec_tts <= delay_estimator_wrapper.c
+[x86_64] Compile        : wq_aec_tts <= division_operations.c
+[x86_64] Compile        : wq_aec_tts <= delay_estimator.c
+[x86_64] Compile        : wq_aec_tts <= energy.c
+[x86_64] Compile        : wq_aec_tts <= get_scaling_square.c
+[x86_64] Compile        : wq_aec_tts <= fft4g.c
+[x86_64] Compile        : wq_aec_tts <= randomization_functions.c
+[x86_64] Compile        : wq_aec_tts <= spl_init.c
+[x86_64] Compile        : wq_aec_tts <= spl_sqrt.c
+[x86_64] Compile        : wq_aec_tts <= spl_sqrt_floor.c
+[x86_64] Compile        : wq_aec_tts <= min_max_operations.c
+[x86_64] Compile        : wq_aec_tts <= real_fft.c
+[x86_64] Compile++      : wq_aec_tts <= cpu_features.cc
+[x86_64] Compile        : wq_aec_tts <= vector_scaling_operations.c
+[x86_64] Compile        : wq_aec_tts <= aec_core.c
+[x86_64] Compile        : wq_aec_tts <= ns_core.c
+[x86_64] Compile        : wq_aec_tts <= nsx_core.c
+[armeabi-v7a] SharedLibrary  : libwq_aec_tts.so
+[x86] SharedLibrary  : libwq_aec_tts.so
+[arm64-v8a] SharedLibrary  : libwq_aec_tts.so
+[x86] Install        : libwq_aec_tts.so => libs/x86/libwq_aec_tts.so
+[arm64-v8a] Install        : libwq_aec_tts.so => libs/arm64-v8a/libwq_aec_tts.so
+[armeabi-v7a] Install        : libwq_aec_tts.so => libs/armeabi-v7a/libwq_aec_tts.so
+[x86_64] SharedLibrary  : libwq_aec_tts.so
+[x86_64] Install        : libwq_aec_tts.so => libs/x86_64/libwq_aec_tts.so
+✅ Built successfully for arm64-v8a
+✅ Built successfully for armeabi-v7a
+✅ Built successfully for x86_64
+✅ Built successfully for x86
+📝 Generating Java wrapper classes...
+📦 Creating Android AAR package...
+⚠️  ANDROID_SDK_ROOT not set, skipping Java compilation
+  adding: AndroidManifest.xml (deflated 48%)
+  adding: assets/ (stored 0%)
+  adding: classes/ (stored 0%)
+  adding: classes.jar (stored 0%)
+  adding: jni/ (stored 0%)
+  adding: jni/armeabi-v7a/ (stored 0%)
+  adding: jni/armeabi-v7a/libwq_aec_tts.so (deflated 47%)
+  adding: jni/x86/ (stored 0%)
+  adding: jni/x86/libwq_aec_tts.so (deflated 56%)
+  adding: jni/arm64-v8a/ (stored 0%)
+  adding: jni/arm64-v8a/libwq_aec_tts.so (deflated 57%)
+  adding: jni/x86_64/ (stored 0%)
+  adding: jni/x86_64/libwq_aec_tts.so (deflated 59%)
+  adding: R.txt (stored 0%)
+  adding: res/ (stored 0%)
+
+🎉 Build Complete!
+📁 Output directory: /Users/mac/Documents/GitHub/webrtc-android-jni/android_output
+📦 AAR file: /Users/mac/Documents/GitHub/webrtc-android-jni/android_output/wq-aec-1.0.aar
+
+📊 Build Summary:
+  - Sample Rate: 16000Hz (WebRTC AEC requirement)
+  - Frame Size: 160 samples (10ms)
+  - Stream Delay: 100ms
+  - Architectures: arm64-v8a armeabi-v7a x86_64 x86
+
+🚀 Next Steps:
+  1. Copy wq-aec-1.0.aar to your Android project's libs/ folder
+  2. Add implementation files('libs/wq-aec-1.0.aar') to build.gradle
+  3. Test with your TTS service integration
+
+⚠️  Important: Always call processTtsAudio() BEFORE playing TTS audio!
+📈 Expected Performance: Good echo cancellation for TTS applications

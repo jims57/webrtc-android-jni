@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jimmy【回声消除】Demo"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp"/>
+
+    <TextView
+        android:id="@+id/textViewInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="采样率: 48kHz | 帧大小: 480采样 (10ms) | 帧级同步优化"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/textViewTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <Button
+        android:id="@+id/buttonInitializeAEC3"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="初始化AEC3"
+        android:textSize="14sp"
+        android:backgroundTint="#2196F3"
+        app:layout_constraintTop_toBottomOf="@id/textViewInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"/>
+
+    <Button
+        android:id="@+id/buttonPlayPCM"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:text="播放PCM"
+        android:textSize="14sp"
+        android:backgroundTint="#FF9800"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/buttonInitializeAEC3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"/>
+
+    <Button
+        android:id="@+id/buttonAECRecording"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:text="AEC3录音（回声消除）"
+        android:textSize="16sp"
+        android:backgroundTint="#4CAF50"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/buttonPlayPCM"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"/>
+
+    <!-- Debug Control Switch - 2025-01-31 -->
+    <LinearLayout
+        android:id="@+id/layoutDebugControl"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#FFF3E0"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/buttonAECRecording"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="详细调试日志 (影响ERLE性能)"
+            android:textSize="14sp"
+            android:textColor="#E65100"/>
+
+        <Switch
+            android:id="@+id/switchDebugLogging"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutDelayControls"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/layoutDebugControl"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="延迟补偿:"
+            android:textSize="14sp"
+            android:textColor="#333333"/>
+
+        <Button
+            android:id="@+id/buttonDelayMinus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:textSize="18sp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="#E0E0E0"/>
+
+        <TextView
+            android:id="@+id/textViewDelayValue"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="100ms"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+
+        <Button
+            android:id="@+id/buttonDelayPlus"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="+"
+            android:textSize="18sp"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="#E0E0E0"/>
+
+    </LinearLayout>
+
+    <!-- Manual Delay Input Controls -->
+    <LinearLayout
+        android:id="@+id/layoutManualDelay"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="10dp"
+        android:background="#F9F9F9"
+        app:layout_constraintTop_toBottomOf="@id/layoutDelayControls"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="精确设置:"
+            android:textSize="14sp"
+            android:textColor="#333333"/>
+
+        <EditText
+            android:id="@+id/editTextDelayValue"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:hint="180"
+            android:inputType="number"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ms"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginEnd="10dp"/>
+
+        <Button
+            android:id="@+id/buttonSetDelay"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="设置"
+            android:textSize="12sp"
+            android:backgroundTint="#4CAF50"/>
+
+    </LinearLayout>
+
+
+
+    <!-- 🎛️ Official AEC3 Configuration Controls - 2025-01-30 -->
+    <LinearLayout
+        android:id="@+id/layoutOfficialAEC3Controls"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E8F5E8"
+        android:padding="15dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutManualDelay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎛️ 官方AEC3参数调优"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#2E7D32"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- Initial State Seconds -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="初始学习时间:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarInitialStateSeconds"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="25"
+                android:progress="0"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textInitialStateValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="默认"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Max Dec Factor LF -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="回声抑制强度:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarMaxDecFactorLF"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="23"
+                android:progress="0"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textMaxDecFactorLFValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="默认"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Max Inc Factor -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="语音恢复速度:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarMaxIncFactor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="35"
+                android:progress="0"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textMaxIncFactorValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="默认"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- ENR Threshold -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="语音检测阈值:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarEnrThreshold"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="90"
+                android:progress="0"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textEnrThresholdValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="默认"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Conservative Initial Phase -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="保守初始模式:"
+                android:textSize="12sp"/>
+
+            <Switch
+                android:id="@+id/switchConservativeInitialPhase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:layout_marginStart="10dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 🎯 ERLE Adjustment Parameters for Mobile Developers - 2025-01-31 -->
+    <LinearLayout
+        android:id="@+id/layoutErleAdjustment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E3F2FD"
+        android:padding="15dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutOfficialAEC3Controls"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎯 ERLE调优参数 (高级)"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- Filter Length Blocks -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="5dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="滤波器长度:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarFilterLength"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="99"
+                android:progress="24"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textFilterLengthValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="25"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Delay Down Sampling Factor -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="5dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="延迟采样系数:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarDelayDownSampling"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="7"
+                android:progress="1"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textDelayDownSamplingValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="2"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- Delay Num Filters -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="5dp">
+
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="延迟滤波器数:"
+                android:textSize="12sp"/>
+
+            <SeekBar
+                android:id="@+id/seekBarDelayNumFilters"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="31"
+                android:progress="15"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:id="@+id/textDelayNumFiltersValue"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:text="16"
+                android:textSize="12sp"
+                android:gravity="center"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewMetrics"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="ERLE: -- dB (--) | 延迟: -- ms | 同步: --"
+        android:textSize="16sp"
+        android:textColor="#2196F3"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="#F0F8FF"
+        android:padding="10dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutErleAdjustment"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <!-- 🎯 Enhanced ERLE Optimization Controls - 2025-01-30 -->
+    <LinearLayout
+        android:id="@+id/layoutEnhancedControls"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#E8F5E9"
+        android:padding="15dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewMetrics"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎯 Enhanced ERLE优化控制"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#2E7D32"
+            android:layout_marginBottom="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/buttonAutoOptimize"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="自动优化延迟"
+                android:textSize="12sp"
+                android:backgroundTint="#4CAF50"
+                android:layout_marginEnd="10dp"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="时序同步:"
+                    android:textSize="12sp"
+                    android:textColor="#2E7D32"/>
+
+                <Switch
+                    android:id="@+id/switchTimingSync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:checked="true"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewErleTarget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="目标: ERLE > 15dB (当前: 6.2dB → 提升中...)"
+            android:textSize="12sp"
+            android:textColor="#2E7D32"
+            android:gravity="center"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+    <!-- ASR Recognition Result Display - 2025-01-29 -->
+    <TextView
+        android:id="@+id/textViewAsrTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="🎤 语音识别结果"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/layoutEnhancedControls"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <LinearLayout
+        android:id="@+id/layoutAsrResult"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F0F8FF"
+        android:padding="15dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewAsrTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="转录模式 ASR 结果:"
+            android:textSize="14sp"
+            android:textColor="#2196F3"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/textViewAsrResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="等待录音完成后进行语音识别..."
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:background="#FFFFFF"
+            android:padding="10dp"
+            android:minHeight="60dp"
+            android:gravity="top|start"/>
+
+        <TextView
+            android:id="@+id/textViewAsrStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="状态: 待机"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="5dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewWavFiles"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="录音文件播放"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/layoutAsrResult"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <LinearLayout
+        android:id="@+id/layoutWavPlayback"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/textViewWavFiles"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="#F5F5F5"
+        android:padding="10dp">
+
+        <!-- Clean Audio Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AEC3处理后（无回声）:"
+            android:textSize="14sp"
+            android:textColor="#4CAF50"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="5dp">
+
+            <TextView
+                android:id="@+id/textViewCleanWav"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="未保存录音文件"
+                android:textSize="12sp"
+                android:textColor="#666666"/>
+
+            <Button
+                android:id="@+id/buttonPlayClean"
+                android:layout_width="60dp"
+                android:layout_height="36dp"
+                android:text="播放"
+                android:textSize="12sp"
+                android:enabled="false"
+                android:backgroundTint="#4CAF50"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="状态: 就绪"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/layoutWavPlayback"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

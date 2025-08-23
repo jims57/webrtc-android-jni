@@ -1,0 +1,5 @@
+            // 🔧 DIVERGENCE PREVENTION for problematic devices (Android phone C fix - 2025-01-30)
+            config.filter.main.error_floor = 0.0001f;     // Lower error floor: prevents divergence
+            config.filter.main.error_ceil = 1.0f;         // Conservative error ceiling: stability
+            config.filter.main_initial.leakage_converged = 0.001f;  // Higher initial leakage: safer convergence
+            config.filter.main_initial.leakage_diverged = 0.1f;     // Higher initial divergence recovery
