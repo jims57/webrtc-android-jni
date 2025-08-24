@@ -161,9 +161,10 @@ bool WqAecProcessor::ProcessTtsAudio(const int16_t* ttsData, size_t numSamples) 
         return false;
     }
     
-    // jim_ace: Log TTS processing details for debugging
-    LOGI("jim_ace TTS_BUFFER_SUCCESS: frame=%llu, energy=%.6f, samples=%zu, result=%d, total_farend=%llu", 
-         (unsigned long long)farend_frames_, ttsEnergy, numSamples, result, (unsigned long long)farend_frames_);
+    // jim_ace: Log TTS processing details for debugging with buffer balance
+    LOGI("jim_ace TTS_BUFFER_SUCCESS: frame=%llu, energy=%.6f, samples=%zu, result=%d, total_farend=%llu, nearend=%llu, balance=%lld", 
+         (unsigned long long)farend_frames_, ttsEnergy, numSamples, result, (unsigned long long)farend_frames_, 
+         (unsigned long long)nearend_frames_, (long long)(farend_frames_ - nearend_frames_));
     
     // CRITICAL FIX: Remove synchronization buffer - it causes duplicate processing
     // The WebRTC AEC handles timing internally when ProcessTtsAudio is called BEFORE ProcessMicrophoneAudio
@@ -238,6 +239,12 @@ bool WqAecProcessor::ProcessMicrophoneAudio(const int16_t* micData, int16_t* out
 
     // CRITICAL FIX: Check if WebRTC AEC has sufficient farend buffer before processing
     // WebRTC AEC needs farend frames to be available for echo cancellation
+    
+    // Enhanced logging to track buffer state and timing
+    LOGI("jim_ace AEC_BUFFER_STATE: farend_frames=%llu, nearend_frames=%llu, diff=%lld, mic_energy=%.6f", 
+         (unsigned long long)farend_frames_, (unsigned long long)nearend_frames_, 
+         (long long)(farend_frames_ - nearend_frames_), micEnergy);
+    
     if (farend_frames_ < nearend_frames_ + 1) {
         LOGW("jim_ace AEC_INSUFFICIENT_FAREND: farend=%llu, nearend=%llu, skipping AEC processing", 
              (unsigned long long)farend_frames_, (unsigned long long)nearend_frames_);
@@ -295,9 +302,9 @@ bool WqAecProcessor::ProcessMicrophoneAudio(const int16_t* micData, int16_t* out
         static int consecutive_failures = 0;
         consecutive_failures = 0;
         
-        // jim_ace: Log successful AEC processing with detailed metrics
-        LOGI("jim_ace AEC_PROCESS_SUCCESS: frame=%llu, mic_energy=%.6f, clean_energy=%.6f, reduction=%.3f, delay=%d, farend_frames=%llu", 
-             (unsigned long long)nearend_frames_, micEnergy, outputEnergy, echoReduction, msInSndCardBuf, (unsigned long long)farend_frames_);
+        // jim_ace: Log successful AEC processing with detailed metrics and buffer state
+        LOGI("jim_ace AEC_PROCESS_SUCCESS: frame=%llu, mic_energy=%.6f, clean_energy=%.6f, reduction=%.3f, delay=%d, farend_frames=%llu, buffer_balance=%lld", 
+             (unsigned long long)nearend_frames_, micEnergy, outputEnergy, echoReduction, msInSndCardBuf, (unsigned long long)farend_frames_, (long long)(farend_frames_ - nearend_frames_));
     }
     
     // SAFETY FIX: Convert processed float back to int16 with bounds checking
