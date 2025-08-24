@@ -17,6 +17,7 @@ JAVA_PACKAGE="cn.watchfun.aec"
 
 # Android NDK Configuration
 ANDROID_NDK_HOME=${ANDROID_NDK_HOME:-"/Users/mac/Library/Android/sdk/ndk/25.2.9519653"}
+ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-"/Users/mac/Library/Android/sdk"}
 ANDROID_API_LEVEL=27
 ANDROID_STL="c++_static"
 
@@ -28,12 +29,20 @@ ANDROID_STREAM_DELAY=100  # Android typical delay (80-150ms range)
 echo "🚀 Building WebRTC AEC TTS Android AAR"
 echo "📁 Project: $PROJECT_ROOT"
 echo "🔧 NDK: $ANDROID_NDK_HOME"
+echo "📱 SDK: $ANDROID_SDK_ROOT"
 echo "📊 AEC Config: ${AEC_SAMPLE_RATE}Hz, ${AEC_FRAME_SIZE} samples, ${ANDROID_STREAM_DELAY}ms delay"
 
 # Validate NDK
 if [ ! -d "$ANDROID_NDK_HOME" ]; then
     echo "❌ Android NDK not found at: $ANDROID_NDK_HOME"
     echo "Set ANDROID_NDK_HOME environment variable or install NDK"
+    exit 1
+fi
+
+# Validate SDK
+if [ ! -d "$ANDROID_SDK_ROOT" ]; then
+    echo "❌ Android SDK not found at: $ANDROID_SDK_ROOT"
+    echo "Set ANDROID_SDK_ROOT environment variable or install SDK"
     exit 1
 fi
 
@@ -378,23 +387,42 @@ mkdir -p "$AAR_DIR"/{classes,jni,res,assets}
 # Copy native libraries
 cp -r "$OUTPUT_DIR/jni" "$AAR_DIR/"
 
-# Compile Java classes
-if [ -n "$ANDROID_SDK_ROOT" ] && [ -f "$ANDROID_SDK_ROOT/platforms/android-$ANDROID_API_LEVEL/android.jar" ]; then
-    javac -d "$AAR_DIR/classes" -cp "$ANDROID_SDK_ROOT/platforms/android-$ANDROID_API_LEVEL/android.jar" \
-        "$BUILD_DIR/java/cn/watchfun/aec/WqAecProcessor.java"
+# Compile Java classes with proper error handling
+ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-$ANDROID_API_LEVEL/android.jar"
+
+if [ -f "$ANDROID_JAR" ]; then
+    echo "📝 Compiling Java classes with Android SDK..."
     
-    # Create classes.jar
-    cd "$AAR_DIR/classes"
-    jar cf ../classes.jar .
-    cd "$PROJECT_ROOT"
+    # Ensure clean compilation directory
+    rm -rf "$AAR_DIR/classes"
+    mkdir -p "$AAR_DIR/classes"
+    
+    # Compile with proper classpath and error handling
+    if javac -d "$AAR_DIR/classes" \
+           -cp "$ANDROID_JAR" \
+           -source 8 -target 8 \
+           "$BUILD_DIR/java/cn/watchfun/aec/WqAecProcessor.java"; then
+        
+        echo "✅ Java compilation successful"
+        
+        # Create classes.jar with proper structure
+        cd "$AAR_DIR/classes"
+        if jar cf ../classes.jar .; then
+            echo "✅ classes.jar created successfully"
+        else
+            echo "❌ Failed to create classes.jar"
+            exit 1
+        fi
+        cd "$PROJECT_ROOT"
+    else
+        echo "❌ Java compilation failed"
+        exit 1
+    fi
 else
-    echo "⚠️  ANDROID_SDK_ROOT not set, creating minimal classes.jar"
-    # Create minimal classes.jar structure
-    mkdir -p "$AAR_DIR/classes/cn/watchfun/aec"
-    echo "// Placeholder" > "$AAR_DIR/classes/cn/watchfun/aec/WqAecProcessor.class"
-    cd "$AAR_DIR/classes"
-    jar cf ../classes.jar cn/
-    cd "$PROJECT_ROOT"
+    echo "❌ Android JAR not found at: $ANDROID_JAR"
+    echo "Available platforms:"
+    ls -la "$ANDROID_SDK_ROOT/platforms/" 2>/dev/null || echo "No platforms directory found"
+    exit 1
 fi
 
 # Create AndroidManifest.xml
