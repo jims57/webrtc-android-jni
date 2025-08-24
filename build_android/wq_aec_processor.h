@@ -14,6 +14,8 @@ extern "C" {
                              float* const* out, size_t nrOfSamples, int16_t msInSndCardBuf, int32_t skew);
 }
 
+
+
 namespace webrtc_aec_tts {
 
 /**
@@ -146,10 +148,31 @@ public:
      */
     void ClearCleanAudioBuffer();
 
+    /**
+     * Enable or disable frame-level synchronization between TTS and microphone processing
+     * @param enabled true to enable synchronization (recommended for echo cancellation)
+     */
+    void SetFrameSynchronization(bool enabled) { sync_enabled_ = enabled; }
+
+    /**
+     * Get current TTS frame buffer size (for debugging)
+     * @return number of buffered TTS frames
+     */
+    size_t GetTtsBufferSize() const { return tts_frame_buffer_.size(); }
+
+    /**
+     * Clear TTS frame buffer (useful when stopping/starting recording)
+     */
+    void ClearTtsBuffer() { tts_frame_buffer_.clear(); }
+
 private:
     void* aec_handle_;              // WebRTC AEC instance handle
     bool initialized_;              // Initialization state
     int16_t sound_card_delay_ms_;   // Sound card buffer delay
+    
+    // TTS frame synchronization for proper echo cancellation
+    std::vector<std::vector<float>> tts_frame_buffer_;  // Buffered TTS frames for synchronization
+    bool sync_enabled_;             // Frame synchronization enabled flag
     
     // Clean audio accumulation for export
     std::vector<std::vector<float>> clean_audio_frames_;
