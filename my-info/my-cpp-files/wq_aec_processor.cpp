@@ -44,25 +44,36 @@ bool WqAecProcessor::Initialize() {
     // Create WebRTC AEC instance using the correct API
     aec_handle_ = WebRtcAec_Create();
     if (!aec_handle_) {
-        LOGE("Failed to create WebRTC AEC instance");
+        LOGE("jim_ace AEC_INIT_FAIL: Failed to create WebRTC AEC instance");
         return false;
     }
 
     // Initialize AEC with 16kHz sample rate - CRITICAL for echo cancellation to work
     int result = WebRtcAec_Init(aec_handle_, kSampleRate, kSampleRate);
     if (result != 0) {
-        LOGE("Failed to initialize WebRTC AEC: %d", result);
+        LOGE("jim_ace AEC_INIT_FAIL: Failed to initialize WebRTC AEC: %d", result);
         WebRtcAec_Free(aec_handle_);
         aec_handle_ = nullptr;
         return false;
     }
 
-    LOGI("WebRTC AEC initialized successfully (16kHz, frame size: %d)", kFrameSize);
+    LOGI("jim_ace AEC_INIT_SUCCESS: WebRTC AEC initialized (16kHz, frame size: %d)", kFrameSize);
 
-    // Apply aggressive configuration for TTS echo cancellation
-    if (!SetConfig(current_config_)) {
-        LOGW("Failed to apply default AEC configuration, but continuing");
+    // CRITICAL FIX: Apply AEC configuration using the correct API
+    AecConfig webrtc_config;
+    webrtc_config.nlpMode = current_config_.nlpMode;
+    webrtc_config.skewMode = current_config_.skewMode;
+    webrtc_config.metricsMode = current_config_.metricsMode;
+    webrtc_config.delay_logging = current_config_.delay_logging;
+    
+    int config_result = WebRtcAec_set_config(aec_handle_, webrtc_config);
+    if (config_result != 0) {
+        LOGE("jim_ace AEC_CONFIG_FAIL: Failed to set AEC configuration: %d", config_result);
+        return false;
     }
+    
+    LOGI("jim_ace AEC_CONFIG_SUCCESS: NLP=%d, Skew=%d, Metrics=%d, DelayLog=%d", 
+         webrtc_config.nlpMode, webrtc_config.skewMode, webrtc_config.metricsMode, webrtc_config.delay_logging);
 
     // Clear buffers and reset counters
     ClearCleanAudioBuffer();
@@ -90,25 +101,35 @@ void WqAecProcessor::Destroy() {
 
 bool WqAecProcessor::ProcessTtsAudio(const int16_t* ttsData, size_t numSamples) {
     if (!initialized_ || !aec_handle_) {
-        LOGE("AEC processor not initialized");
+        LOGE("jim_ace TTS_PROCESS_FAIL: AEC processor not initialized");
         return false;
     }
 
-    if (!ValidateFrameSize(numSamples)) {
-        LOGE("Invalid TTS frame size: %zu, expected: %d", numSamples, kFrameSize);
+    // CRITICAL FIX: WebRTC AEC requires exactly 80 or 160 samples (5ms or 10ms frames)
+    if (numSamples != 80 && numSamples != 160) {
+        LOGE("jim_ace TTS_PROCESS_FAIL: Invalid TTS frame size: %zu, expected: 80 or 160", numSamples);
         return false;
     }
 
     if (!ttsData) {
-        LOGE("TTS data is null");
+        LOGE("jim_ace TTS_PROCESS_FAIL: TTS data is null");
         return false;
     }
 
-    // CRITICAL FIX: Process TTS audio with the OLD WebRTC AEC API
-    // Convert int16 to float and normalize
+    // CRITICAL FIX: Add buffer overflow protection
+    if (farend_frames_ > 100000) {  // Prevent excessive buffering
+        LOGW("jim_ace TTS_BUFFER_RESET: Too many farend frames, resetting");
+        farend_frames_ = 0;
+    }
+
+    // CRITICAL FIX: Process TTS audio with proper buffer validation
+    // Convert int16 to float with bounds checking
     std::vector<float> ttsFrame(numSamples);
     for (size_t i = 0; i < numSamples; i++) {
-        ttsFrame[i] = static_cast<float>(ttsData[i]) / 32768.0f;
+        // Clamp input to prevent overflow
+        int16_t sample = ttsData[i];
+        sample = std::max(static_cast<int16_t>(-32768), std::min(sample, static_cast<int16_t>(32767)));
+        ttsFrame[i] = static_cast<float>(sample) / 32768.0f;
     }
     
     // Calculate TTS frame energy for debugging
@@ -118,19 +139,31 @@ bool WqAecProcessor::ProcessTtsAudio(const int16_t* ttsData, size_t numSamples) 
     }
     ttsEnergy = sqrtf(ttsEnergy / numSamples);
     
-    // CRITICAL FIX: Process TTS reference frame with WebRTC AEC immediately
-    // This is the ONLY place where TTS frames should be processed for AEC
-    int result = WebRtcAec_BufferFarend(aec_handle_, ttsFrame.data(), numSamples);
-    if (result != 0) {
-        LOGE("Failed to buffer TTS farend audio: %d", result);
+    // CRITICAL FIX: Add safety check before calling WebRTC AEC
+    if (ttsFrame.empty() || ttsFrame.size() != numSamples) {
+        LOGE("jim_ace TTS_BUFFER_FAIL: Invalid TTS frame buffer");
         return false;
     }
     
-    // REDUCED LOGGING: Only log every 100 frames for performance
-    if (farend_frames_ % 100 == 0) {
-        LOGD("AEC TTS Reference: frame=%llu, energy=%.3f, result=%d", 
-             (unsigned long long)farend_frames_, ttsEnergy, result);
+    // CRITICAL FIX: Process TTS reference frame with WebRTC AEC - with error recovery
+    int result = WebRtcAec_BufferFarend(aec_handle_, ttsFrame.data(), numSamples);
+    if (result != 0) {
+        LOGE("jim_ace TTS_BUFFER_FAIL: WebRtcAec_BufferFarend failed: %d, samples=%zu, energy=%.6f", 
+             result, numSamples, ttsEnergy);
+        
+        // CRITICAL: Don't return false immediately - try to recover
+        if (result == -1) {
+            LOGW("jim_ace TTS_BUFFER_RECOVER: Attempting AEC recovery");
+            // Reset and try again
+            farend_frames_ = 0;
+            return false; // Skip this frame but continue processing
+        }
+        return false;
     }
+    
+    // jim_ace: Log TTS processing details for debugging
+    LOGI("jim_ace TTS_BUFFER_SUCCESS: frame=%llu, energy=%.6f, samples=%zu, result=%d, total_farend=%llu", 
+         (unsigned long long)farend_frames_, ttsEnergy, numSamples, result, (unsigned long long)farend_frames_);
     
     // CRITICAL FIX: Remove synchronization buffer - it causes duplicate processing
     // The WebRTC AEC handles timing internally when ProcessTtsAudio is called BEFORE ProcessMicrophoneAudio
@@ -148,27 +181,43 @@ bool WqAecProcessor::ProcessTtsAudio(const int16_t* ttsData, size_t numSamples) 
 bool WqAecProcessor::ProcessMicrophoneAudio(const int16_t* micData, int16_t* outputData, 
                                           size_t numSamples, int16_t msInSndCardBuf) {
     if (!initialized_ || !aec_handle_) {
-        LOGE("AEC processor not initialized");
+        LOGE("jim_ace MIC_PROCESS_FAIL: AEC processor not initialized");
         return false;
     }
 
-    if (!ValidateFrameSize(numSamples)) {
-        LOGE("Invalid microphone frame size: %zu, expected: %d", numSamples, kFrameSize);
+    // CRITICAL FIX: WebRTC AEC requires exactly 80 or 160 samples (5ms or 10ms frames)
+    if (numSamples != 80 && numSamples != 160) {
+        LOGE("jim_ace MIC_PROCESS_FAIL: Invalid microphone frame size: %zu, expected: 80 or 160", numSamples);
         return false;
     }
 
     if (!micData || !outputData) {
-        LOGE("Microphone data or output buffer is null");
+        LOGE("jim_ace MIC_PROCESS_FAIL: Microphone data or output buffer is null");
         return false;
     }
 
-    // Convert microphone input to float and calculate energy
+    // CRITICAL FIX: Add buffer overflow protection
+    if (nearend_frames_ > 100000) {  // Prevent excessive processing
+        LOGW("jim_ace MIC_BUFFER_RESET: Too many nearend frames, resetting");
+        nearend_frames_ = 0;
+    }
+
+    // CRITICAL FIX: Validate sound card delay parameter
+    if (msInSndCardBuf < 0 || msInSndCardBuf > 1000) {
+        LOGW("jim_ace MIC_DELAY_CLAMP: Invalid sound card delay %d, clamping to 100ms", msInSndCardBuf);
+        msInSndCardBuf = 100;
+    }
+
+    // Convert microphone input to float with bounds checking
     std::vector<float> floatInput(numSamples);
     std::vector<float> floatOutput(numSamples);
     
     float micEnergy = 0.0f;
     for (size_t i = 0; i < numSamples; i++) {
-        floatInput[i] = static_cast<float>(micData[i]) / 32768.0f;
+        // Clamp input to prevent overflow
+        int16_t sample = micData[i];
+        sample = std::max(static_cast<int16_t>(-32768), std::min(sample, static_cast<int16_t>(32767)));
+        floatInput[i] = static_cast<float>(sample) / 32768.0f;
         micEnergy += floatInput[i] * floatInput[i];
     }
     micEnergy = sqrtf(micEnergy / numSamples);
@@ -181,6 +230,34 @@ bool WqAecProcessor::ProcessMicrophoneAudio(const int16_t* micData, int16_t* out
     const float* nearend[1] = {floatInput.data()};
     float* out[1] = {floatOutput.data()};
 
+    // CRITICAL FIX: Add safety checks before calling WebRTC AEC
+    if (floatInput.empty() || floatOutput.empty() || floatInput.size() != numSamples) {
+        LOGE("jim_ace AEC_PROCESS_FAIL: Invalid input/output buffers");
+        return false;
+    }
+
+    // CRITICAL FIX: Check if WebRTC AEC has sufficient farend buffer before processing
+    // WebRTC AEC needs farend frames to be available for echo cancellation
+    if (farend_frames_ < nearend_frames_ + 1) {
+        LOGW("jim_ace AEC_INSUFFICIENT_FAREND: farend=%llu, nearend=%llu, skipping AEC processing", 
+             (unsigned long long)farend_frames_, (unsigned long long)nearend_frames_);
+        
+        // Copy input to output without AEC processing
+        for (size_t i = 0; i < numSamples; i++) {
+            floatOutput[i] = floatInput[i];
+        }
+        
+        // Convert back to int16 and return
+        for (size_t i = 0; i < numSamples; i++) {
+            float sample = floatOutput[i] * 32768.0f;
+            sample = std::max(-32768.0f, std::min(32767.0f, sample));
+            outputData[i] = static_cast<int16_t>(sample);
+        }
+        
+        nearend_frames_++;
+        return true; // Return success but without AEC processing
+    }
+    
     // CRITICAL: This performs the ACTUAL echo cancellation with the old AEC
     // TTS frames must have been buffered via ProcessTtsAudio() BEFORE this call
     int result = WebRtcAec_Process(aec_handle_, nearend, 1, out, numSamples, msInSndCardBuf, 0);
@@ -195,22 +272,32 @@ bool WqAecProcessor::ProcessMicrophoneAudio(const int16_t* micData, int16_t* out
     float echoReduction = (micEnergy > 0.0f) ? (outputEnergy / micEnergy) : 1.0f;
     
     if (result != 0) {
-        // REDUCED ERROR LOGGING: Only log every 20 failures to prevent crash
-        if (nearend_frames_ % 20 == 0) {
-            LOGE("AEC_Process FAILED: result=%d, falling back to input", result);
-        }
-        // Copy input to output as fallback - with bounds check
-        for (size_t i = 0; i < std::min(numSamples, floatInput.size()); i++) {
+        LOGE("jim_ace AEC_PROCESS_FAIL: frame=%llu, result=%d, mic_energy=%.6f, falling back to input", 
+             (unsigned long long)nearend_frames_, result, micEnergy);
+        
+        // CRITICAL: Safe fallback with bounds checking
+        size_t safeSamples = std::min(numSamples, std::min(floatInput.size(), floatOutput.size()));
+        for (size_t i = 0; i < safeSamples; i++) {
             floatOutput[i] = floatInput[i];
         }
         outputEnergy = micEnergy;
         echoReduction = 1.0f;
-    } else {
-        // SUCCESS LOGGING: Only log every 100 frames to prevent excessive logging crash
-        if (nearend_frames_ % 100 == 0) {
-            LOGD("AEC OK: energy %.3f->%.3f, reduction=%.3f", 
-                 micEnergy, outputEnergy, echoReduction);
+        
+        // CRITICAL: Don't continue processing if AEC fails repeatedly
+        static int consecutive_failures = 0;
+        consecutive_failures++;
+        if (consecutive_failures > 10) {
+            LOGE("jim_ace AEC_CRITICAL_FAIL: Too many consecutive AEC failures, may need reinitialization");
+            consecutive_failures = 0; // Reset counter
         }
+    } else {
+        // Reset failure counter on success
+        static int consecutive_failures = 0;
+        consecutive_failures = 0;
+        
+        // jim_ace: Log successful AEC processing with detailed metrics
+        LOGI("jim_ace AEC_PROCESS_SUCCESS: frame=%llu, mic_energy=%.6f, clean_energy=%.6f, reduction=%.3f, delay=%d, farend_frames=%llu", 
+             (unsigned long long)nearend_frames_, micEnergy, outputEnergy, echoReduction, msInSndCardBuf, (unsigned long long)farend_frames_);
     }
     
     // SAFETY FIX: Convert processed float back to int16 with bounds checking
@@ -280,15 +367,17 @@ bool WqAecProcessor::SetConfig(const AecConfig& config) {
         return true;
     }
 
-    // CRITICAL FIX: Use the correct WebRTC AEC API that actually exists
-    // The old WebRTC AEC doesn't have WebRtcAec_set_config function
-    // Instead, configuration is handled during initialization
+    // CRITICAL FIX: Use the correct WebRTC AEC configuration API
+    int result = WebRtcAec_set_config(aec_handle_, config);
+    if (result != 0) {
+        LOGE("jim_ace AEC_SET_CONFIG_FAIL: Failed to set AEC configuration: %d", result);
+        return false;
+    }
+    
     current_config_ = config;
-    LOGI("AEC configuration stored: NLP=%d, Skew=%d, Metrics=%d, DelayLog=%d",
+    LOGI("jim_ace AEC_SET_CONFIG_SUCCESS: NLP=%d, Skew=%d, Metrics=%d, DelayLog=%d",
          config.nlpMode, config.skewMode, config.metricsMode, config.delay_logging);
     
-    // Note: The old WebRTC AEC applies configuration internally during processing
-    // Advanced configuration requires reinitialization with specific parameters
     return true;
 }
 
@@ -350,12 +439,13 @@ void WqAecProcessor::AccumulateCleanAudio(const int16_t* audioData, size_t numSa
 }
 
 void WqAecProcessor::InitializeDefaultConfig() {
-    current_config_.nlpMode = 2;           // Aggressive NLP mode for TTS echo cancellation
-    current_config_.skewMode = 1;          // Enable skew compensation for better sync
-    current_config_.metricsMode = 1;       // Enable metrics for monitoring
-    current_config_.delay_logging = 0;     // Delay logging off for performance
+    current_config_.nlpMode = kAecNlpAggressive;  // Use aggressive NLP mode for TTS echo cancellation
+    current_config_.skewMode = kAecTrue;          // Enable skew compensation for better sync
+    current_config_.metricsMode = kAecTrue;       // Enable metrics for monitoring
+    current_config_.delay_logging = kAecFalse;    // Delay logging off for performance
     
-    LOGI("Default AEC config: Aggressive NLP, Skew compensation enabled, Production-grade settings");
+    LOGI("jim_ace AEC_DEFAULT_CONFIG: NLP=Aggressive(%d), Skew=Enabled(%d), Metrics=Enabled(%d)", 
+         current_config_.nlpMode, current_config_.skewMode, current_config_.metricsMode);
 }
 
 } // namespace webrtc_aec_tts

@@ -4,15 +4,9 @@
 #include <vector>
 #include <memory>
 
-// Forward declarations for WebRTC AEC (old API that's actually available)
+// WebRTC AEC includes - use the actual headers from the repository
 extern "C" {
-    // AEC functions - AecConfig will be included from WebRTC header
-    void* WebRtcAec_Create();
-    void WebRtcAec_Free(void* aecInst);
-    int32_t WebRtcAec_Init(void* aecInst, int32_t sampFreq, int32_t scSampFreq);
-    int32_t WebRtcAec_BufferFarend(void* aecInst, const float* farend, size_t nrOfSamples);
-    int32_t WebRtcAec_Process(void* aecInst, const float* const* nearend, size_t num_bands,
-                             float* const* out, size_t nrOfSamples, int16_t msInSndCardBuf, int32_t skew);
+#include "webrtc/modules/audio_processing/aec/include/echo_cancellation.h"
 }
 
 
@@ -51,13 +45,7 @@ public:
     static const int kChannels = 1;           // Mono
     static const int kBitsPerSample = 16;     // 16-bit samples
 
-    // AEC configuration structure - define our own to avoid conflicts
-    struct AecConfig {
-        int16_t nlpMode;              // NLP mode: 0=off, 1=mild, 2=moderate, 3=aggressive
-        int16_t skewMode;             // Skew mode: 0=off, 1=on
-        int16_t metricsMode;          // Metrics mode: 0=off, 1=on
-        int delay_logging;            // Delay logging: 0=off, 1=on
-    };
+    // Use AecConfig from WebRTC header (already included above)
 
     // Performance metrics structure
     struct AecMetrics {

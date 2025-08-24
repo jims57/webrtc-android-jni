@@ -124,7 +124,7 @@ Java_cn_watchfun_aec_WqAecProcessor_nativeSetConfig(JNIEnv *env, jobject thiz,
                                             jint metrics_mode, jint delay_logging) {
     if (!g_processor) return JNI_FALSE;
     
-    webrtc_aec_tts::WqAecProcessor::AecConfig config;
+    AecConfig config;
     config.nlpMode = static_cast<int16_t>(nlp_mode);
     config.skewMode = static_cast<int16_t>(skew_mode);
     config.metricsMode = static_cast<int16_t>(metrics_mode);
@@ -141,7 +141,7 @@ JNIEXPORT jintArray JNICALL
 Java_cn_watchfun_aec_WqAecProcessor_nativeGetConfig(JNIEnv *env, jobject thiz) {
     if (!g_processor) return nullptr;
     
-    webrtc_aec_tts::WqAecProcessor::AecConfig config;
+    AecConfig config;
     if (!g_processor->GetConfig(&config)) {
         return nullptr;
     }

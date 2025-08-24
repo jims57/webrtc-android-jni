@@ -40,6 +40,9 @@
   /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/algorithm \
   /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/functional \
   /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/__split_buffer \
+  /Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../src/webrtc/modules/audio_processing/aec/include/echo_cancellation.h \
+  /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/stddef.h \
+  /Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../src/webrtc/typedefs.h \
   /Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../wq_aec_convertor.h
 
 /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/memory:
@@ -121,5 +124,11 @@
 /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/functional:
 
 /Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/__split_buffer:
+
+/Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../src/webrtc/modules/audio_processing/aec/include/echo_cancellation.h:
+
+/Users/mac/Library/Android/sdk/ndk/25.2.9519653/sources/cxx-stl/llvm-libc++/include/stddef.h:
+
+/Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../src/webrtc/typedefs.h:
 
 /Users/mac/Documents/GitHub/webrtc-android-jni/build_android/jni/../wq_aec_convertor.h:
