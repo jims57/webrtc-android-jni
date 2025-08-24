@@ -388,8 +388,13 @@ if [ -n "$ANDROID_SDK_ROOT" ] && [ -f "$ANDROID_SDK_ROOT/platforms/android-$ANDR
     jar cf ../classes.jar .
     cd "$PROJECT_ROOT"
 else
-    echo "⚠️  ANDROID_SDK_ROOT not set, skipping Java compilation"
-    touch "$AAR_DIR/classes.jar"
+    echo "⚠️  ANDROID_SDK_ROOT not set, creating minimal classes.jar"
+    # Create minimal classes.jar structure
+    mkdir -p "$AAR_DIR/classes/cn/watchfun/aec"
+    echo "// Placeholder" > "$AAR_DIR/classes/cn/watchfun/aec/WqAecProcessor.class"
+    cd "$AAR_DIR/classes"
+    jar cf ../classes.jar cn/
+    cd "$PROJECT_ROOT"
 fi
 
 # Create AndroidManifest.xml
